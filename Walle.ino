@@ -1,6 +1,6 @@
 #include <Servo.h>
-#define photoD 2
-#define photoL 3       // x is pin connected to on board
+#define photoD 3
+#define photoL 2       // x is pin connected to on board
 #define photoR 4       // x is pin connected to on board
 
 
@@ -13,7 +13,7 @@ int ultraSoundSignalF = 30; // Ultrasound signal pin
 unsigned long ultrasoundValueF = 0;
 
 unsigned long echoL = 0;
-int ultraSoundSignalL = 34; // Ultrasound signal pin
+int ultraSoundSignalL = 32; // Ultrasound signal pin
 unsigned long ultrasoundValueL = 0;
 
 // W is for west
@@ -22,7 +22,7 @@ int ultraSoundSignalW = 38; // Ultrasound signal pin
 unsigned long ultrasoundValueW = 0;
 
 unsigned long echoR = 0;
-int ultraSoundSignalR = 32; // Ultrasound signal pin
+int ultraSoundSignalR = 34; // Ultrasound signal pin
 unsigned long ultrasoundValueR = 0;
 
 // E is for East
@@ -303,7 +303,7 @@ boolean isLeftOpen()
 }
 
 
-
+// Move the robot forward.
 void forward() 
 {
   servoLeft.write(180);
@@ -326,6 +326,8 @@ void forward()
   //delay (400);
 }
 
+////Turn the robot Around.  Also changing the Mapping direction accordingly.
+//Print the x, y coordinates and the new robot direction
 void turnAround() 
 {
   servoLeft.write(90);
@@ -358,7 +360,8 @@ void turnAround()
   //delay (400);
 }
 
-
+//Turn the robot Left.  Also changing the Mapping direction accordingly.
+//Print the x, y coordinates and the new robot direction
 void turnLeft() 
 {
   servoLeft.write(60);
@@ -393,7 +396,8 @@ void turnLeft()
   //delay(400)
 }
 
-
+//Turn the robot Right.  Also changing the Mapping direction accordingly.
+//Print the x, y coordinates and the new robot direction
 void turnRight() 
 {
   servoLeft.write (120);
@@ -488,7 +492,17 @@ void trackLight()
 void loop()
 {
   //photodiode activation
+  //Print photodiode readings
   int photoRead = analogRead(photoD);
+  Serial.print("Main diode            ");
+  Serial.println(photoRead);
+  int photoRRRR = analogRead(photoR);
+  Serial.print("Right photo Diode     ");
+  Serial.println(photoRRRR);
+  int photoLLLL = analogRead(photoL);
+  Serial.print("Left photo Diode      ");
+  Serial.println(photoLLLL);
+  Serial.println();
 
   Serial.print(photoRead);
 
@@ -506,7 +520,10 @@ void loop()
   while (1==1)
   {
     // When the robot finds a light source of photoRead intensity, Stop.
-    if(photoRead > 40){
+    //Set the photoRead Max here and when the robot reaches an area with that
+    //max, the robot will stop and rotate and the solar panel will elevate until 
+    // max light is found.
+    if(photoRead > 150){
       trackLight();
       moveLinearArm();
       
@@ -520,14 +537,22 @@ void loop()
       forward();
       delay (2000);
     }
+    
+    //The robot will move forward until the front is blocked by an object or  
+    // there is a obstacle or restriction on the mapping array
+    //If there is an object or restriction in front, check the right of the robot
+    // If the right is empty, turn right.  Else check left.
     else if (isRightOpen() == true || (f < 10 && l < 10 && r > 10 && w < 10 && e > 10) ) {
       turnRight();
       delay (2000);
     }
+    // Check if left is open on the mapping array and by ultrasonic sensors.
+    //If left is open and there are no objects, turn left
     else if (isLeftOpen() == true || (f < 10 && l > 10 && r < 10 && w > 10 && e < 10) ) {
         turnLeft();
         delay (2000);
-    } 
+    }
+    // If the front, left, and right of the robot is blocked.  The robot will turn around. 
     else if ( isFrontOpen(),isRightOpen(),isLeftOpen() == false 
           ||  (f < 12 && l < 12 && r < 12 && w < 12 && e < 12) ) 
         {
